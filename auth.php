@@ -114,10 +114,10 @@ class vkauth {
   /**
    * Просто сохраняет файлы
    * @param string $filename Название файла
-   * @param mixed $out Контент, что будет в файле
+  //  * @param mixed $out Контент, что будет в файле
    * @return void
    */
-  public function saveAs(string $filename, mixed $out) {
+  public function saveAs(string $filename, $out) {
     file_put_contents(__DIR__ . "/" . $filename, $out);
   }
 }
