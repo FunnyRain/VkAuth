@@ -2,6 +2,7 @@
 
 use Curl\Curl;
 use Campo\UserAgent;
+use Sunra\PhpSimple\HtmlDomParser;
 
 require_once './vendor/autoload.php';
 require_once './myModules/loguru.php';
@@ -38,22 +39,20 @@ class vkauth {
 
     $saveCookies = $curl->getResponseCookies();
     $curl->setCookies($saveCookies);
+    $dom = HtmlDomParser::str_get_html($curl->rawResponse);
 
-    $to_0 = @explode('<input type="hidden" name="to" id="to" value="', $curl->rawResponse)[1];
-    $to = @explode('"', $to_0)[0];
-    if (is_null($to) or empty($to))
+    $to = @$dom->find('input[name=to]', 1)->attr['value'];
+    if (!isset($to) or empty($to))
       return $loguru->error('Не удалось найти to');
     else $loguru->debug($to);
 
-    $iph_0 = @explode('<input type="hidden" name="ip_h" value="', $curl->rawResponse)[1];
-    $iph = @explode('"', $iph_0)[0];
-    if (is_null($iph) or empty($iph))
+    $iph = @$dom->find('input[name=ip_h]', 0)->attr['value'];
+    if (!isset($iph) or empty($iph))
       return $loguru->error('Не удалось найти ip_h');
     else $loguru->debug($iph);
 
-    $lgdomain_0 = @explode('<input type="hidden" name="lg_domain_h" value="', $curl->rawResponse)[1];
-    $lgdomain = @explode('"', $lgdomain_0)[0];
-    if (is_null($lgdomain) or empty($lgdomain))
+    $lgdomain = @$dom->find('input[name=lg_domain_h]', 0)->attr['value'];
+    if (!isset($lgdomain) or empty($lgdomain))
       return $loguru->error('Не удалось найти lg_domain_h');
     else $loguru->debug($lgdomain);
 
@@ -61,7 +60,7 @@ class vkauth {
       "act" => "login",
       "role" => "al_frame",
       "expire" => "",
-      "to" => "/al_feed.php",
+      "to" => $to,
       "recaptcha" => "",
       "captcha_sid" => "",
       "captcha_key" => "",
@@ -83,7 +82,7 @@ class vkauth {
       //! Save error
       if (!file_exists(__DIR__ . '/errors'))
         @mkdir(__DIR__ . '/errors');
-      $this->saveAs($filename = 'error' . count(glob(__DIR__ . '/errors/*')) . '.txt', $curl->rawResponse);
+      $this->saveAs($filename = 'errors/error' . count(glob(__DIR__ . '/errors/*')) . '.txt', $curl->rawResponse);
       $loguru->log('Ошибка, сохранил ошибку; ' . $filename);
     } else {
       $fullname = @explode("{name: '", $parse)[1];
